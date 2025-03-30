@@ -135,7 +135,7 @@ Plan to consider:
 
 The emphasis of `llm-profiler` is **layer-level**, as well as fine-grained algorithmic operations, rather than simply using FLOPs to describe. We separate intermediate output between the layers, temporary buffer and parameters, while others mainly focus on overall operations and system peak memory.
 
-###References
+### References
 
 #### [DeepSpeed](https://github.com/deepspeedai/DeepSpeed/tree/master/deepspeed/profiling/flops_profiler)
 Gives FLOPs per layer, however, doesn't distinguish addition and summation, which can be very different (latency \& energy consumption) when LLMs are deployed on different devices.

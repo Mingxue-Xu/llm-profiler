@@ -1,7 +1,7 @@
 from src import get_model_config, get_profile
 
-MODEL_ID="meta-llama/Llama-3.2-1B-Instruct"                 # NOTE: change the model_id here
-HF_TOKEN="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"
+MODEL_ID="meta-llama/Llama-3.2-1B-Instruct"
+HF_TOKEN="Your HuggingFace access token here"
 BATCH_SIZE=16
 TEXT_LENGTH=200
 if __name__ == "__main__":

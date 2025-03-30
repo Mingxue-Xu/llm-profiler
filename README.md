@@ -135,13 +135,13 @@ Plan to consider:
 
 The emphasis of `llm-profiler` is **layer-level**, as well as fine-grained algorithmic operations, rather than simply using FLOPs to describe. We separate intermediate output between the layers, temporary buffer and parameters, while others mainly focus on overall operations and system peak memory.
 
-**References**
+###References
 
-### [DeepSpeed](https://github.com/deepspeedai/DeepSpeed/tree/master/deepspeed/profiling/flops_profiler)
+#### [DeepSpeed](https://github.com/deepspeedai/DeepSpeed/tree/master/deepspeed/profiling/flops_profiler)
 Gives FLOPs per layer, however, doesn't distinguish addition and summation, which can be very different (latency \& energy consumption) when LLMs are deployed on different devices.
 
-### [PyTorch Profiler](https://github.com/pytorch/kineto) and [`torch.autograd.profiler`](https://github.com/pytorch/pytorch/blob/v2.6.0/torch/autograd/profiler.py) 
+#### [PyTorch Profiler](https://github.com/pytorch/kineto) and [`torch.autograd.profiler`](https://github.com/pytorch/pytorch/blob/v2.6.0/torch/autograd/profiler.py) 
 Coarse-grained profiler that gives the FLOPs and memory, CPU usage, etc., on the whole model level, rather than layer-level.
 
-### [Holistic Trace Analysis](https://github.com/facebookresearch/HolisticTraceAnalysis)
+#### [Holistic Trace Analysis](https://github.com/facebookresearch/HolisticTraceAnalysis)
 A more visualized, systematic model-level profiler based on [PyTorch Profiler](https://github.com/pytorch/kineto). 

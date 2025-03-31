@@ -78,7 +78,7 @@ class LlamaHookFunction(HookFunction):
         flopsunit.cache += config.head_dim
 
         #   self.original_inv_freq = self.inv_freq
-        flopsunit.params +=config.head_dim
+        # flopsunit.params +=config.head_dim
 
         return flopsunit
 

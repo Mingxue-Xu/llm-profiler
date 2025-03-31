@@ -21,7 +21,7 @@ transformer with input batchsize 16 and sequence length 200:
     MULT:       59.02   (10^9)
     DIV:        327.89  (10^6)
     SQRT:       16
-    PARAMS:     15.83   (10^9)
+    PARAMS:     1.24    (10^9)
     CACHE:      59.10   (10^6)
     ACT:        15.58   (10^9)
 ```
@@ -53,6 +53,8 @@ The output in the terminal should be something like
 transformer with input batch size 16 and sequence length 200:
     FLOPs (ADD and MULT):      117.30  (10^9)
 ```
+<details>
+<summary>Click to expand/collapse other examples</summary>
 #### 2. Get the total transformer element-wise multiplication operations during the inference
 ```python                   
 get_profile(kwargs, "mult")                   
@@ -79,7 +81,7 @@ get_profile(kwargs, "params", "attn")
 The output in the terminal should be something like
 ```shell
 attn with input batchsize 16 and sequence length 200:
-    PARAMS:     2.68  (10^9)
+    PARAMS:     167.77  (10^6)
 ```
 #### 5. Get the activations (intermediate output between the layers) of the transformer
 ```python   
@@ -100,7 +102,10 @@ mlp with input batchsize 16 and sequence length 200:
     ACT:        12.88   (10^9)
 ```
 
-For how to set `kwargs` and what kind of data are available, please refer to [docs/kwargs](docs/kwargs.md)
+</details>
+
+
+**NOTE**: For how to set `kwargs` and what kind of data are available, please refer to [docs/kwargs](docs/kwargs.md)
 
 ## Detailed Explanation
 
@@ -135,7 +140,7 @@ Plan to consider:
 
 The emphasis of `llm-profiler` is **layer-level**, as well as fine-grained algorithmic operations, rather than simply using FLOPs to describe. We separate intermediate output between the layers, temporary buffer and parameters, while others mainly focus on overall operations and system peak memory.
 
-### References
+### Other Profilers
 
 #### [DeepSpeed](https://github.com/deepspeedai/DeepSpeed/tree/master/deepspeed/profiling/flops_profiler)
 Gives FLOPs per layer, however, doesn't distinguish addition and summation, which can be very different (latency \& energy consumption) when LLMs are deployed on different devices.

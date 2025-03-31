@@ -55,6 +55,7 @@ transformer with input batch size 16 and sequence length 200:
 ```
 <details>
 <summary>Click to expand/collapse other examples</summary>
+
 #### 2. Get the total transformer element-wise multiplication operations during the inference
 ```python                   
 get_profile(kwargs, "mult")                   

@@ -49,6 +49,7 @@ def get_profile(
     if scope is None or scope == "transformer":
         if scope is None:
             scope = "transformer"
+
         flopsunit=LlamaHook.llama_model(
             config=kwargs['model_config'],
             input_shape=kwargs['input_shape'],

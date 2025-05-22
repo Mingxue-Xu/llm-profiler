@@ -205,7 +205,7 @@ class LlamaHookFunction(HookFunction):
         #     cache_kwargs = {"sin": sin, "cos": cos, "cache_position": cache_position}
         #     key_states, value_states = past_key_value.update(key_states, value_states, self.layer_idx, cache_kwargs)
         # # # key_states.size() = [batch_size,config.num_key_value_heads,text_len,head_dim]
-        flopsunit.cache += batch_size*config.num_key_value_heads * text_len    *head_dim
+        flopsunit.cache += batch_size * config.num_key_value_heads * text_len * head_dim
         # # # value_states.size() = [batch_size,config.num_key_value_heads,text_len,head_dim]
         flopsunit.cache += batch_size * config.num_key_value_heads * text_len * head_dim
 
@@ -219,12 +219,14 @@ class LlamaHookFunction(HookFunction):
             #   attn_bias = torch.zeros(L, S, dtype=query.dtype, device=query.device)
             flopsunit.div += 1
             flopsunit.sqrt += 1
+            flopsunit.act += batch_size * config.num_attention_heads * text_len * head_dim
 
             #   query @ key.transpose(-2, -1)
             flopsunit.mult += batch_size*config.num_attention_heads *   text_len    *   head_dim    *  text_len
             flopsunit.add +=  batch_size*config.num_attention_heads *   text_len    *   (head_dim-1)    *  text_len
             #   attn_weight = query @ key.transpose(-2, -1) * scale_factor
             flopsunit.mult += batch_size * config.num_attention_heads * text_len * text_len
+            flopsunit.act += batch_size * config.num_attention_heads * text_len * head_dim
             #   attn_weight += attn_bias
             flopsunit.add += batch_size * config.num_attention_heads * text_len * text_len
             #   attn_weight = torch.softmax(attn_weight, dim=-1)
@@ -233,6 +235,7 @@ class LlamaHookFunction(HookFunction):
             #   attn_weight @ value
             flopsunit.mult += batch_size * config.num_attention_heads * text_len * head_dim * text_len
             flopsunit.add += batch_size * config.num_attention_heads * text_len * head_dim * (text_len-1)
+            flopsunit.act += batch_size * config.num_attention_heads * text_len * head_dim
 
         #   attn_output = self.o_proj(attn_output)
         flopsunit = HookFunction.linear(batch_size=batch_size, in_features=config.num_attention_heads * head_dim,

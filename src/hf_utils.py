@@ -14,6 +14,6 @@ def get_model_config(hf_token: str, model_id: str):
         return get_llama_config(hf_token=hf_token, model_id=model_id)
     else:
         raise NotImplementedError(f"{model_id} is not supported")
-        return
+
 
 

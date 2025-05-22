@@ -117,25 +117,25 @@ For how to set `kwargs` and what kind of data are available, please refer to [do
 **Dynamics** that are considered:
 - `PARAMS`: the layers' parameters or the transformer parameters
 - `ACT`: activations (intermediate output between the layers) of the layers or the transformer
-- `CACHE`: temorary buffers of the layers or the transformer  
+- `CACHE`: temporary buffers of the layers or the transformer (not necessarily KV cache) 
 
 NOT considered:
 - logistic sigmoid (in activation functions)
-- `output_hidden_states=True` or `output_attentions=True` in the transformer forward pass (e.g. in [`LlamaModel.forward`](https://github.com/huggingface/transformers/blob/main/src/transformers/models/llama/modeling_llama.py#L518))
+- `output_hidden_states=True` or `output_attentions=True` in the transformer forward pass (e.g. in [`LlamaModel.forward`](https://github.com/huggingface/transformers/blob/main/src/transformers/models/llama/modeling_llama.py#L518)), i.e. attention weights outputs are not currently supported by `sdpa_attention_forward`
 - dynamic rotary embedding (currently only [`llama3 rotary embedding`](https://github.com/huggingface/transformers/blob/main/src/transformers/modeling_rope_utils.py#L322) is supported)
+- systematic peak memory (can be various along with different hardware)
 
 Plan to consider:
-- [] self-defined Model Configuration
-- [] other LLM architecture (e.g. Gemma)
-- [] other scope like `torch.nn.Linear` and `torch.nn.Module.named_parameter` (e.g. `model.layers.12.self_attn.k_proj` and `model.layers.1.mlp.up_proj`)
-
+-[] self-defined Model Configuration
+-[] other LLM architecture (e.g. Gemma)
+-[] other scope like `torch.nn.Linear` and `torch.nn.Module.named_parameter` (e.g. `model.layers.12.self_attn.k_proj` and `model.layers.1.mlp.up_proj`)
 
 
 **NOTE**: For detailed reference code/explanation for FLOPs calculation, a sample reference soure code is in [docs/flops](docs/flops.md).
 
 ## Differences between `llm-profiler` and other profilers
 
-The emphasis of `llm-profiler` is **layer-level**, as well as fine-grained algorithmic operations, rather than simplely use FLOPs to desceibe. We separate intermediate output between the layers, temporay buffer and parameters, while others mainly focus on overall operations and system peak memory.
+The emphasis of `llm-profiler` is **layer-level**, as well as fine-grained algorithmic operations, rather than simply use FLOPs to describe. We separate intermediate output between the layers, temporay buffer and parameters, while others mainly focus on overall operations and system peak memory.
 
 Other profilers are:
 

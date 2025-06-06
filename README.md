@@ -16,14 +16,15 @@ In the root directory of this repo,
 ```
 The output in the terminal should be
 ```shell
+model:	meta-llama/Llama-3.2-1B-Instruct
 transformer with input batchsize 16 and sequence length 200:
-    ADD:        58.28   (10^9)
-    MULT:       59.02   (10^9)
-    DIV:        327.89  (10^6)
-    SQRT:       16
-    PARAMS:     15.83   (10^9)
-    CACHE:      59.10   (10^6)
-    ACT:        15.58   (10^9)
+    ADD:	58.28	(10^9)
+    MULT:	59.17	(10^9)
+    DIV:	3.49	(10^6)
+    SQRT:	16
+    PARAMS:	1.24	(10^9)
+    CACHE:	59.10	(10^6)
+    ACT:	327.18	(10^6)
 ```
 The following instruction is based on the structure of `simple_test.py`.
 
@@ -116,8 +117,8 @@ For how to set `kwargs` and what kind of data are available, please refer to [do
 
 **Dynamics** that are considered:
 - `PARAMS`: the layers' parameters or the transformer parameters
-- `ACT`: activations (intermediate output between the layers) of the layers or the transformer
-- `CACHE`: temporary buffers of the layers or the transformer (not necessarily KV cache) 
+- `ACT`: activations (intermediate output *between* the layers) of the layers or the transformer
+- `CACHE`: temporary *inner* buffers of the layers or the transformer (not necessarily KV cache) during the forward pass
 
 NOT considered:
 - logistic sigmoid (in activation functions)

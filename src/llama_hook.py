@@ -140,7 +140,7 @@ class LlamaHookFunction(HookFunction):
         flopsunit = HookFunction.linear(batch_size=batch_size, in_features=config.hidden_size,
                                              out_features=config.intermediate_size, bias=config.mlp_bias, flopsunit=flopsunit)
         #   self.act_fn(self.gate_proj(x)) * self.up_proj(x)
-        flopsunit.mult += config.hidden_size*config.intermediate_size
+        flopsunit.mult += batch_size*text_len*config.intermediate_size
         #   self.down_proj(self.act_fn(self.gate_proj(x)) * self.up_proj(x))
         flopsunit = HookFunction.linear(batch_size=batch_size, in_features=config.intermediate_size,
                                         out_features=config.hidden_size, bias=config.mlp_bias,
@@ -155,6 +155,9 @@ class LlamaHookFunction(HookFunction):
             input_shape: List,
             config: LlamaConfig = None,
             flopsunit: Optional[FlopsUnit] = None,
+            use_cache: bool = False,
+            past_key_value: Optional[Cache] = None,
+            cache_position: Optional[torch.LongTensor] = None,
             ** kwargs:  Unpack[FlashAttentionKwargs],
     ):
         if flopsunit is None:
@@ -183,7 +186,7 @@ class LlamaHookFunction(HookFunction):
         # query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin)
         ### q_embed = (q * cos) + (rotate_half(q) * sin)
         ##### 1.    rotate_half(q), DIV +2
-        flopsunit.div += 2
+        flopsunit.div += batch_size * config.num_attention_heads * text_len
         ##### 2.    (rotate_half(q) * sin)
         flopsunit.mult +=   batch_size*config.num_attention_heads   *   text_len    *   head_dim
         ##### 3.    (q * cos)
@@ -226,12 +229,12 @@ class LlamaHookFunction(HookFunction):
             flopsunit.add +=  batch_size*config.num_attention_heads *   text_len    *   (head_dim-1)    *  text_len
             #   attn_weight = query @ key.transpose(-2, -1) * scale_factor
             flopsunit.mult += batch_size * config.num_attention_heads * text_len * text_len
-            flopsunit.act += batch_size * config.num_attention_heads * text_len * head_dim
+            flopsunit.act += batch_size * config.num_attention_heads * text_len * head_dim  # Attention output, rather than attention weights
             #   attn_weight += attn_bias
             flopsunit.add += batch_size * config.num_attention_heads * text_len * text_len
             #   attn_weight = torch.softmax(attn_weight, dim=-1)
             flopsunit.add +=    batch_size * config.num_attention_heads * text_len * (text_len-1)
-            flopsunit.div +=    batch_size * config.num_attention_heads * text_len * text_len   #   TODO: is it correct here?
+            flopsunit.div +=    batch_size * config.num_attention_heads * text_len
             #   attn_weight @ value
             flopsunit.mult += batch_size * config.num_attention_heads * text_len * head_dim * text_len
             flopsunit.add += batch_size * config.num_attention_heads * text_len * head_dim * (text_len-1)

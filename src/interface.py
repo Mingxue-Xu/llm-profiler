@@ -3,7 +3,7 @@ from .llama_hook import *
 from .flops import INT64_ZERO
 from transformers import AutoConfig, AutoModel
 
-DISPLAY_STR="{} with input batchsize {} and sequence length {}:"
+DISPLAY_STR="model:\t{}\n{} with input batchsize {} and sequence length {}:"
 ATTR_STR = "    {}:\t{}"
 
 def convert_number(num: INT64_ZERO) -> AnyStr:
@@ -25,7 +25,11 @@ def convert_number(num: INT64_ZERO) -> AnyStr:
 def display(scope:AnyStr, kwargs: Dict, flopsunit: FlopsUnit, attr: AnyStr):
     attributes = vars(flopsunit)
 
-    print(DISPLAY_STR.format(scope,kwargs['input_shape'][0],kwargs['input_shape'][1]))
+    print(DISPLAY_STR.format(kwargs['model_id'],
+                             scope,
+                             kwargs['input_shape'][0],
+                             kwargs['input_shape'][1])
+          )
     if attr is None:
         for attr, value in attributes.items():
             print(ATTR_STR.format(attr.upper(),convert_number(value)))

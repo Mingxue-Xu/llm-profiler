@@ -71,9 +71,9 @@ class HookFunction:
 
         flopsunit.add += batch_size*(in_features-1)    *    out_features + bias_add
 
-        flopsunit.params += batch_size * in_features * out_features + bias_mem    #  param.numel()
+        flopsunit.params += in_features * out_features + bias_mem    #  param.numel()
 
-        flopsunit.act += batch_size * in_features * out_features #
+        flopsunit.act += batch_size * out_features #
 
         return flopsunit
 

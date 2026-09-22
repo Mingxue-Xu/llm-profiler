@@ -12,9 +12,8 @@ from typing import Optional, Tuple, Union, Callable
 from transformers.cache_utils import Cache, DynamicCache
 from transformers.modeling_flash_attention_utils import FlashAttentionKwargs
 from transformers.modeling_rope_utils import ROPE_INIT_FUNCTIONS
-from triton.language import dtype
 # MODEL_ID="OPT"                 # NOTE: change the model_id here
-HF_TOKEN="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"
+HF_TOKEN = os.environ.get("HF_TOKEN")      # NOTE: export HF_TOKEN=... ; never commit a token
 DATASET = {                                                 # NOTE: change the dataset config here
     "name":"joey234/mmlu-high_school_biology",
     "config_name": "default",
@@ -303,7 +302,7 @@ def load_model():
     model = LlamaForCausalLM.from_pretrained(
         MODEL_ID,
         device_map="auto",
-        use_auth_token=HF_TOKEN,
+        token=HF_TOKEN,
         torch_dtype=torch.float16
     )
 

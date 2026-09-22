@@ -4,10 +4,36 @@ from typing import Optional, Tuple, List, Union, Dict
 from transformers.cache_utils import Cache, DynamicCache
 from transformers.modeling_flash_attention_utils import FlashAttentionKwargs
 from transformers.processing_utils import Unpack
-from transformers.models.llama.modeling_llama import KwargsForCausalLM
 from transformers.models.llama.configuration_llama import LlamaConfig
-from transformers.modeling_rope_utils import _compute_default_rope_parameters, _compute_llama3_parameters
 from .flops import *
+
+
+def _rope_params(config: LlamaConfig) -> Dict:
+    """The RoPE settings dict.
+
+    transformers>=5 renamed `config.rope_scaling` to `config.rope_parameters` and
+    moved `rope_theta` inside it. `rope_scaling` survives as an alias, but read the
+    new name first so this keeps working when the alias goes away.
+    """
+    params = getattr(config, "rope_parameters", None) or getattr(config, "rope_scaling", None)
+    return params or {}
+
+
+def _base_inv_freq(config: LlamaConfig) -> torch.Tensor:
+    """The un-scaled RoPE inverse frequencies.
+
+    transformers<5 exposed this as `_compute_default_rope_parameters`; transformers 5
+    dropped that helper and inlines these two lines into each rope_type branch of
+    modeling_rope_utils, so we reproduce them here rather than import a private name.
+    """
+    params = _rope_params(config)
+    base = params.get("rope_theta") or getattr(config, "rope_theta")
+    partial_rotary_factor = params.get(
+        "partial_rotary_factor", getattr(config, "partial_rotary_factor", 1.0)
+    )
+    head_dim = getattr(config, "head_dim", None) or config.hidden_size // config.num_attention_heads
+    dim = int(head_dim * partial_rotary_factor)
+    return 1.0 / (base ** (torch.arange(0, dim, 2, dtype=torch.int64).float() / dim))
 
 class LlamaHookFunction(HookFunction):
     @staticmethod
@@ -54,11 +80,12 @@ class LlamaHookFunction(HookFunction):
         flopsunit.mult += int(dim/2)
 
         #   _compute_llama3_parameters
-        inv_freq, attention_factor = _compute_default_rope_parameters(config)
-        factor = config.rope_scaling["factor"]  # `8` in the original implementation
-        low_freq_factor = config.rope_scaling["low_freq_factor"]  # `1` in the original implementation
-        high_freq_factor = config.rope_scaling["high_freq_factor"]  # `4` in the original implementation
-        old_context_len = config.rope_scaling["original_max_position_embeddings"]  # `8192` in the original implementation
+        rope_params = _rope_params(config)
+        inv_freq = _base_inv_freq(config)
+        factor = rope_params["factor"]  # `8` in the original implementation
+        low_freq_factor = rope_params["low_freq_factor"]  # `1` in the original implementation
+        high_freq_factor = rope_params["high_freq_factor"]  # `4` in the original implementation
+        old_context_len = rope_params["original_max_position_embeddings"]  # `8192` in the original implementation
         low_freq_wavelen = old_context_len / low_freq_factor
         wavelen = 2 * math.pi / inv_freq
 
@@ -91,9 +118,10 @@ class LlamaHookFunction(HookFunction):
             flopsunit = FlopsUnit()
 
         batch_size, text_len, dim = input_shape[0], input_shape[1], config.hidden_size
-        rope_factor = int(config.rope_scaling["factor"])
-        if hasattr(config, "rope_scaling") and config.rope_scaling is not None:
-            rope_type = config.rope_scaling.get("rope_type", config.rope_scaling.get("type"))
+        rope_params = _rope_params(config)
+        rope_factor = int(rope_params["factor"])
+        if rope_params:
+            rope_type = rope_params.get("rope_type", rope_params.get("type"))
         else:
             rope_type = "default"
 
